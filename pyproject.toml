@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tg-bot-bs"
+version = "1.0.0"
+description = "Telegram-экосистема (канал + бот + Mini App) для магазина косметики Beauty Supply MSK"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Beauty Supply MSK" }]
+keywords = ["telegram", "aiogram", "e-commerce", "beauty", "cosmetics"]
+
+dependencies = [
+    "aiogram>=3.13,<4",
+    "sqlalchemy[asyncio]>=2.0,<3",
+    "aiosqlite>=0.20",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "redis>=5.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "apscheduler>=3.10,<4",
+    "aiohttp>=3.9",
+    "python-dotenv>=1.0",
+    "yookassa>=3.2",
+    "loguru>=0.7",
+    "python-dateutil>=2.9",
+    "beautifulsoup4>=4.12",
+    "cryptography>=42.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["bot", "channel", "scripts"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"bot/data" = "bot/data"
+"webapp" = "webapp"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true

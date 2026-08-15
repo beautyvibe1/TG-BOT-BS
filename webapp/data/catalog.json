@@ -1,0 +1,325 @@
+{
+  "meta": {
+    "shop": "Beauty Supply MSK",
+    "brand": "BEAUTY SUPPLY",
+    "tagline": "MOSCOW · SINCE 2011",
+    "description": "Премиальная косметика из США. Проверяем каждый товар, подбираем как beauty-консьерж и доставляем в любой город России.",
+    "currency": "RUB",
+    "site_url": "https://beautysupplymsk.github.io/new/",
+    "catalog_url": "https://beautysupplymsk.github.io/new/#catalog",
+    "bot_url": "https://t.me/BEAUTYSUPPLYMSKBOT",
+    "channel_url": "https://t.me/beautysupplymsk",
+    "avito_url": "https://www.avito.ru/user/7d5cc17e554a6f4d901ec51bdd907f7b/profile",
+    "instagram_url": "https://instagram.com/beautysupplymsk",
+    "email": "support@beauty-supply.shop",
+    "source_repo": "https://github.com/BEAUTYSUPPLYMSK/new",
+    "source_file": "src/data/products.ts",
+    "updated_at": "2026-08-15T00:00:00Z",
+    "schema_version": 1,
+    "brand_colors": {
+      "ink": "#181312",
+      "wine": "#4b1f28",
+      "cream": "#f5f0e8",
+      "pearl": "#fffdf9",
+      "blush": "#ecc6bb",
+      "rose": "#c78e81",
+      "gold": "#bd9961",
+      "blue": "#3e66b2"
+    }
+  },
+  "categories": [
+    {
+      "id": "care",
+      "name": "Уход",
+      "emoji": "🧴",
+      "count": 6
+    },
+    {
+      "id": "spf",
+      "name": "SPF-защита",
+      "emoji": "☀️",
+      "count": 2
+    },
+    {
+      "id": "makeup",
+      "name": "Макияж",
+      "emoji": "💄",
+      "count": 5
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "slug": "volu-lift-body",
+      "brand": "IMAGE Skincare",
+      "line": "VOL.U.LIFT™",
+      "name": "BODY Sculpt + Firm Treatment",
+      "ruName": "Лифтинг-комплекс для тела",
+      "category": "care",
+      "price": 7799,
+      "volume": "170 г",
+      "badge": "Bestseller",
+      "image": "./assets/products/volu-lift-body.webp",
+      "summary": "Моделирующий уход для более гладкого и упругого вида кожи тела.",
+      "benefits": [
+        "Визуально повышает упругость",
+        "Интенсивно увлажняет",
+        "Подходит для ежедневного массажа"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 2,
+      "slug": "volu-lift-face",
+      "brand": "IMAGE Skincare",
+      "line": "VOL.U.LIFT™",
+      "name": "GLP-1 4D Skin Rebound Complex",
+      "ruName": "Комплекс для плотности кожи",
+      "category": "care",
+      "price": 11599,
+      "volume": "57 г",
+      "badge": "New",
+      "image": "./assets/products/volu-lift-face.webp",
+      "summary": "Мультикомплекс для кожи с признаками потери объёма, сухости и снижения плотности.",
+      "benefits": [
+        "Поддерживает ощущение плотности",
+        "Смягчает видимость морщин",
+        "Даёт эффект наполненной кожи"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 3,
+      "slug": "vital-c-repair-creme",
+      "brand": "IMAGE Skincare",
+      "line": "VITAL C",
+      "name": "Hydrating Repair Crème",
+      "ruName": "Восстанавливающий крем с витамином C",
+      "category": "care",
+      "price": 7799,
+      "volume": "57 г",
+      "badge": "Glow",
+      "image": "./assets/products/vital-c.webp",
+      "summary": "Питательный крем с витаминами A и C для сухой, чувствительной и тусклой кожи.",
+      "benefits": [
+        "Поддерживает защитный барьер",
+        "Дарит комфорт и сияние",
+        "Подходит для вечернего ухода"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 4,
+      "slug": "ageless-retinol-03",
+      "brand": "IMAGE Skincare",
+      "line": "AGELESS+",
+      "name": "Retinol Repair Crème 0.3%",
+      "ruName": "Ночной крем с ретинолом 0,3%",
+      "category": "care",
+      "price": 8000,
+      "volume": "50 г",
+      "badge": "Pro age",
+      "image": "./assets/products/ageless-retinol.webp",
+      "summary": "Инкапсулированный ретинол для визуального выравнивания текстуры и тона кожи.",
+      "benefits": [
+        "Смягчает видимость линий",
+        "Выравнивает микрорельеф",
+        "Постепенное высвобождение ретинола"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 5,
+      "slug": "daily-prevention-spf30",
+      "brand": "IMAGE Skincare",
+      "line": "DAILY PREVENTION™",
+      "name": "Pure Mineral Hydrating SPF 30",
+      "ruName": "Минеральный увлажняющий SPF 30",
+      "category": "spf",
+      "price": 5200,
+      "volume": "73 г",
+      "badge": "Daily SPF",
+      "image": "./assets/products/spf30.webp",
+      "summary": "Ежедневный минеральный SPF и увлажняющий уход в одном невесомом средстве.",
+      "benefits": [
+        "Широкий спектр защиты",
+        "Устойчивость к воде до 80 минут",
+        "Комфортная база под макияж"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 6,
+      "slug": "daily-prevention-spf75",
+      "brand": "IMAGE Skincare",
+      "line": "DAILY PREVENTION™",
+      "name": "Advanced Smartblend Mineral SPF 75",
+      "ruName": "Минеральный smart-крем SPF 75",
+      "category": "spf",
+      "price": 6000,
+      "volume": "48 г",
+      "badge": "High protection",
+      "image": "./assets/products/spf75.webp",
+      "summary": "Высокая минеральная защита с адаптирующимся оттенком и сияющим естественным финишем.",
+      "benefits": [
+        "Высокая UVA/UVB-защита",
+        "Адаптивный оттенок",
+        "Минеральные фильтры"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 7,
+      "slug": "restoring-youth-serum",
+      "brand": "IMAGE MD",
+      "line": "IMAGE MD®",
+      "name": "Restoring Youth Serum",
+      "ruName": "Восстанавливающая сыворотка",
+      "category": "care",
+      "price": 10800,
+      "volume": "30 мл",
+      "badge": "Clinical",
+      "image": "./assets/products/restoring-youth-serum.webp",
+      "summary": "Сыворотка с пептидами, растительными экстрактами и стабильной формой витамина C.",
+      "benefits": [
+        "Поддерживает видимую упругость",
+        "Улучшает сияние",
+        "Для утренней и вечерней рутины"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 8,
+      "slug": "pillow-talk-palette",
+      "brand": "Charlotte Tilbury",
+      "line": "PILLOW TALK",
+      "name": "Luxury Palette — Pillow Talk",
+      "ruName": "Палетка теней Pillow Talk",
+      "category": "makeup",
+      "price": 7500,
+      "volume": "5,2 г",
+      "badge": "Icon",
+      "image": "./assets/products/pillow-talk.webp",
+      "summary": "Культовый квартет сияющих розово-нюдовых оттенков для макияжа от дня к вечеру.",
+      "benefits": [
+        "4 гармоничных оттенка",
+        "Легко растушёвывается",
+        "Сияющий финиш без грубого блеска"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 9,
+      "slug": "curator-eyeshadow-minimalist",
+      "brand": "Hourglass",
+      "line": "CURATOR",
+      "name": "Eyeshadow Refill — Minimalist",
+      "ruName": "Тени Curator Minimalist",
+      "category": "makeup",
+      "price": 6500,
+      "volume": "1 г",
+      "badge": null,
+      "image": "./assets/products/curator-eyeshadow.webp",
+      "summary": "Насыщенный рефил теней с ультратонкой текстурой и глубоким нейтральным оттенком.",
+      "benefits": [
+        "Чистый интенсивный пигмент",
+        "Шелковистое нанесение",
+        "Vegan & cruelty-free"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 10,
+      "slug": "ambient-lighting-palette",
+      "brand": "Hourglass",
+      "line": "AMBIENT™",
+      "name": "Ambient Lighting Palette",
+      "ruName": "Палетка финишных пудр",
+      "category": "makeup",
+      "price": 7500,
+      "volume": "3 × 3 г",
+      "badge": "Bestseller",
+      "image": "./assets/products/ambient-palette.webp",
+      "summary": "Три финишные пудры с технологией рассеивания света для мягкого многомерного сияния.",
+      "benefits": [
+        "Эффект мягкого фокуса",
+        "3 световых эффекта",
+        "Можно наслаивать"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 11,
+      "slug": "ambient-lighting-blush",
+      "brand": "Hourglass",
+      "line": "AMBIENT™",
+      "name": "Ambient Lighting Blush",
+      "ruName": "Сияющие запечённые румяна",
+      "category": "makeup",
+      "price": 3700,
+      "volume": "4,2 г",
+      "badge": "Soft glow",
+      "image": "./assets/products/ambient-blush.webp",
+      "summary": "Мраморный гибрид румян и финишной пудры для живого, естественно сияющего цвета.",
+      "benefits": [
+        "Каждый рисунок уникален",
+        "Невесомый цвет",
+        "Мягкое рассеивание света"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 12,
+      "slug": "hollywood-contour-wand",
+      "brand": "Charlotte Tilbury",
+      "line": "HOLLYWOOD",
+      "name": "Contour Wand",
+      "ruName": "Жидкий скульптор",
+      "category": "makeup",
+      "price": 3500,
+      "volume": "12 мл",
+      "badge": "Viral",
+      "image": "./assets/products/hollywood-contour.webp",
+      "summary": "Лёгкий жидкий скульптор с кушоном для естественной тени и эффекта точёных скул.",
+      "benefits": [
+        "Легко растушёвывается",
+        "Натуральный полуматовый финиш",
+        "Удобный аппликатор"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    },
+    {
+      "id": 13,
+      "slug": "biotech-longevity-creme",
+      "brand": "IMAGE MD",
+      "line": "IMAGE MD®",
+      "name": "Biotech Longevity Crème",
+      "ruName": "Биотехнологичный крем для упругости",
+      "category": "care",
+      "price": 11800,
+      "volume": "50 г",
+      "badge": "New 2026",
+      "image": "./assets/products/biotech-longevity.webp",
+      "summary": "Увлажняющий biotech-комплекс с Phyto NAD+ Booster и системой XOSM™ для упругого, сияющего вида кожи.",
+      "benefits": [
+        "Поддерживает видимую упругость",
+        "Укрепляет ощущение барьера",
+        "Без отдушки, некомедогенно"
+      ],
+      "available": true,
+      "in_stock": "В наличии"
+    }
+  ]
+}
