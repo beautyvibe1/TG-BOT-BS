@@ -1,0 +1,45 @@
+services:
+  bot:
+    build: .
+    container_name: beauty-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://beauty:beauty@db:5432/beauty_bot
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - db
+      - redis
+    # Для webhook-режима раскомментируйте проброс порта
+    # ports:
+    #   - "8080:8080"
+
+  db:
+    image: postgres:16-alpine
+    container_name: beauty-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: beauty
+      POSTGRES_PASSWORD: beauty
+      POSTGRES_DB: beauty_bot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beauty -d beauty_bot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: beauty-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
