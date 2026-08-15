@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base, BigIntegerPkMixin, TimestampMixin, utcnow
 
 
-class PromoType(str, enum.Enum):
+class PromoType(enum.StrEnum):
     PERCENT = "percent"
     FIXED = "fixed"
 

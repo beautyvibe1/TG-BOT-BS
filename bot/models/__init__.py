@@ -7,13 +7,13 @@ from .base import Base, TimestampMixin, utcnow
 from .cart import Cart, CartItem
 from .category import Category
 from .order import (
+    STATUS_LABELS,
     DeliveryMethod,
     Order,
     OrderItem,
     OrderStatus,
     PaymentMethod,
     PaymentStatus,
-    STATUS_LABELS,
 )
 from .product import Product
 from .promo import Consultation, Promo, PromoType

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, BigIntegerPkMixin, TimestampMixin
 
 
-class OrderStatus(str, enum.Enum):
+class OrderStatus(enum.StrEnum):
     """Статусы жизненного цикла заказа."""
 
     NEW = "new"                  # создан, ожидает оплаты/подтверждения
@@ -39,14 +39,14 @@ STATUS_LABELS: dict[OrderStatus, str] = {
 }
 
 
-class DeliveryMethod(str, enum.Enum):
+class DeliveryMethod(enum.StrEnum):
     MOSCOW_COURIER = "moscow_courier"
     CDEK = "cdek"
     AVITO = "avito_delivery"
     SELF_PICKUP = "self_pickup"
 
 
-class PaymentMethod(str, enum.Enum):
+class PaymentMethod(enum.StrEnum):
     CARD = "card"                      # карта РФ / ЮKassa
     SB_P = "sbp"                       # СБП
     TRANSFER = "transfer"              # перевод вручную + подтверждение админа
@@ -54,7 +54,7 @@ class PaymentMethod(str, enum.Enum):
     AVITO = "avito"                    # безопасная сделка на Авито
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     PENDING = "pending"
     SUCCEEDED = "succeeded"
     FAILED = "failed"

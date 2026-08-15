@@ -8,7 +8,6 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from bot.config import get_settings
 from bot.keyboards.factories import CartCallback, OrderCallback
 from bot.keyboards.inline import (
     delivery_methods_keyboard,
@@ -54,7 +53,7 @@ async def start_order(callback: CallbackQuery, state: FSMContext, session) -> No
 
 @router.message(OrderState.NAME)
 async def order_name(message: Message, state: FSMContext) -> None:
-    name = message.text.strip()
+    name = (message.text or "").strip()
     if not name or name.startswith("/"):
         return
     await state.update_data(customer_name=name)
@@ -72,7 +71,7 @@ async def order_phone_contact(message: Message, state: FSMContext) -> None:
 
 @router.message(OrderState.PHONE)
 async def order_phone_text(message: Message, state: FSMContext) -> None:
-    phone = message.text.strip()
+    phone = (message.text or "").strip()
     if not phone or phone.startswith("/"):
         return
     await state.update_data(phone=phone)
@@ -96,7 +95,7 @@ async def order_delivery(callback: CallbackQuery, callback_data: OrderCallback, 
 
 @router.message(OrderState.ADDRESS)
 async def order_address(message: Message, state: FSMContext) -> None:
-    address = message.text.strip()
+    address = (message.text or "").strip()
     if not address or address.startswith("/"):
         return
     await state.update_data(address=address)
@@ -112,12 +111,10 @@ async def order_payment(callback: CallbackQuery, callback_data: OrderCallback, s
     await state.set_state(OrderState.CONFIRMATION)
 
     from bot.keyboards.inline import InlineKeyboardBuilder
-    from aiogram.types import InlineKeyboardButton
 
     builder = InlineKeyboardBuilder()
-    if data.get("promo_code"):
-        builder.button(text="🎟 Изменить промокод", callback_data=CartCallback(action="promo").pack())
-    builder.button(text="🎟 Ввести промокод", callback_data=CartCallback(action="promo").pack())
+    promo_label = "🎟 Изменить промокод" if data.get("promo_code") else "🎟 Ввести промокод"
+    builder.button(text=promo_label, callback_data=CartCallback(action="promo").pack())
     builder.button(text="✅ Подтвердить заказ", callback_data=OrderCallback(action="confirm").pack())
     builder.button(text="↩️ В корзину", callback_data=CartCallback(action="view").pack())
     builder.adjust(1)
@@ -209,7 +206,7 @@ async def order_submit(callback: CallbackQuery, state: FSMContext, session) -> N
 
     # Уведомление администратору
     from aiogram.utils.keyboard import InlineKeyboardBuilder
-    from aiogram.types import InlineKeyboardButton
+
     from bot.keyboards.factories import AdminCallback
 
     kb = InlineKeyboardBuilder()
@@ -282,16 +279,17 @@ async def webapp_order(message: Message, state: FSMContext) -> None:
 # ─────────────────────────────────────────────────────────────────────
 @router.message(OrderState.PROMO)
 async def apply_promo_code(message: Message, state: FSMContext, session) -> None:
-    if message.text.strip().lower() == "/отмена":
+    if not message.text:
+        return
+    code = message.text.strip()
+    if code.lower() == "/отмена":
         await state.set_state(OrderState.CONFIRMATION)
         await message.answer("Промокод не применён.")
         return
-    code = message.text.strip()
     promo = await get_promo(session, code)
     if promo is None or not promo.is_valid:
         await message.answer("❌ Промокод не найден или неактивен. Попробуйте ещё раз:\n\n/отмена")
         return
-    data = await state.get_data()
     user = await catalog_service.get_or_create_user(session, message.from_user.id)
     cart = await catalog_service.get_cart(session, user)
     if cart.total_price < promo.min_order:

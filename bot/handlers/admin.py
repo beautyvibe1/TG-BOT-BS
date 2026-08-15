@@ -5,20 +5,19 @@ from __future__ import annotations
 import logging
 
 from aiogram import F, Router
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot.config import get_settings
 from bot.filters import IsAdmin
-from bot.keyboards.factories import AdminCallback, MenuCallback
+from bot.keyboards.factories import AdminCallback
 from bot.keyboards.inline import (
     admin_menu_keyboard,
     admin_order_keyboard,
     admin_orders_keyboard,
     admin_products_keyboard,
     admin_promos_keyboard,
-    main_inline_menu,
 )
 from bot.models import Consultation, Order, OrderStatus, Promo, PromoType
 from bot.services.order import render_order
@@ -44,10 +43,11 @@ async def admin_back(callback: CallbackQuery) -> None:
 
 @router.callback_query(AdminCallback.filter(F.action == "stats"))
 async def admin_stats(callback: CallbackQuery, session) -> None:
-    from datetime import datetime, timedelta
+    from datetime import UTC, datetime, timedelta
+
     from sqlalchemy import func, select
 
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     day_ago = now - timedelta(days=1)
     week_ago = now - timedelta(days=7)
     month_ago = now - timedelta(days=30)
@@ -94,7 +94,7 @@ async def admin_order_detail(callback: CallbackQuery, callback_data: AdminCallba
         await callback.answer("Заказ не найден", show_alert=True)
         return
     kb = admin_order_keyboard(order.id, order.status_enum)
-    await callback.message.edit_text(render_order(order), reply_markup=kb, parse_mode="Markdown")
+    await callback.message.edit_text(render_order(order), reply_markup=kb, parse_mode="HTML")
     await callback.answer()
 
 
@@ -155,8 +155,9 @@ async def admin_product(callback: CallbackQuery, callback_data: AdminCallback) -
 
 @router.callback_query(AdminCallback.filter(F.action == "toggle_avail"))
 async def admin_toggle_avail(callback: CallbackQuery, callback_data: AdminCallback, session) -> None:
-    from bot.models import Product
     from sqlalchemy import select
+
+    from bot.models import Product
 
     product = await session.scalar(select(Product).where(Product.external_id == callback_data.product_id))
     if product:
@@ -336,6 +337,7 @@ async def broadcast_confirm(message: Message, state: FSMContext, session) -> Non
         return
     data = await state.get_data()
     from sqlalchemy import select
+
     from bot.models import User
 
     users = (await session.scalars(select(User).where(User.is_subscribed == True))).all()  # noqa: E712
@@ -357,8 +359,8 @@ async def broadcast_confirm(message: Message, state: FSMContext, session) -> Non
 # ─────────────────────────────────────────────────────────────────────
 @router.callback_query(AdminCallback.filter(F.action == "channel_post"))
 async def admin_channel_post(callback: CallbackQuery) -> None:
-    from channel.poster import post_product_to_channel
     from bot.services.catalog import get_products
+    from channel.poster import post_product_to_channel
 
     products = get_products()
     sent = 0
@@ -396,10 +398,10 @@ async def admin_settings(callback: CallbackQuery) -> None:
     text = (
         "⚙️ <b>Настройки</b>\n\n"
         f"Режим: <code>{settings.bot_mode}</code>\n"
-        f"Канал: {settings.channel_id}\n"
+        f"Канал: {settings.channel_id} (chat_id: <code>{settings.resolved_channel_id}</code>)\n"
         f"Каталог: <code>{settings.catalog_path}</code>\n"
         f"Платежи: {'вкл' if settings.payments_enabled else 'выкл'}\n\n"
-        "Все настройки задаются через `.env`."
+        "Все настройки задаются через <code>.env</code>."
     )
-    await callback.message.edit_text(text, reply_markup=admin_menu_keyboard(), parse_mode="Markdown")
+    await callback.message.edit_text(text, reply_markup=admin_menu_keyboard(), parse_mode="HTML")
     await callback.answer()

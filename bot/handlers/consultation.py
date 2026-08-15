@@ -8,12 +8,12 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from bot.config import get_settings
-from bot.keyboards.factories import ConsultationCallback, MenuCallback
+from bot.filters import ChatIsManagerGroup
+from bot.keyboards.factories import ConsultationCallback
 from bot.keyboards.inline import ask_manager_keyboard, consultation_keyboard, faq_keyboard
 from bot.models import Consultation
 from bot.services.catalog import get_faqs, get_or_create_user
-from bot.services.notification import notify_admins, notify_manager_group
+from bot.services.notification import notify_manager_group
 from bot.states import ConsultationState
 
 logger = logging.getLogger(__name__)
@@ -136,16 +136,13 @@ async def consult_message_text(message: Message, state: FSMContext) -> None:
     )
 
 
-@router.message()
+@router.message(ChatIsManagerGroup())
 async def manager_reply_forward(message: Message) -> None:
     """Пересылает ответ менеджера клиенту.
 
     Срабатывает на реплику в группе менеджеров на наше уведомление.
     Из текста исходного сообщения извлекается ID клиента.
     """
-    settings = get_settings()
-    if message.chat.id != settings.manager_group_id:
-        return
     if not message.reply_to_message:
         return
     if not message.text:

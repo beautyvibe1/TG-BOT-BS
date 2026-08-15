@@ -7,12 +7,13 @@ import logging
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, User as TgUser
+from aiogram.types import CallbackQuery, Message
+from aiogram.types import User as TgUser
 
 from bot.config import get_settings
 from bot.keyboards import main_inline_menu, main_menu_keyboard
 from bot.keyboards.factories import MenuCallback
-from bot.services.catalog import get_or_create_user, get_product_by_id, get_product_by_slug
+from bot.services.catalog import get_or_create_user, get_product_by_slug
 
 logger = logging.getLogger(__name__)
 
@@ -67,22 +68,62 @@ async def _track_source(user: TgUser, payload: str | None, session) -> None:
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext, session) -> None:
     await state.clear()
-    payload = message.text.removeprefix("/start").strip()
-    payload = payload[1:] if payload.startswith(" ") else payload
-    payload = payload or (message.text.split(" ", 1)[1] if " " in message.text else "")
+    parts = (message.text or "").strip().split(maxsplit=1)
+    payload = parts[1].strip() if len(parts) > 1 else ""
 
     try:
         await _track_source(message.from_user, payload or None, session)
     except Exception:  # noqa: BLE001
         logger.exception("Не удалось сохранить источник")
 
-    if payload and payload.startswith("product_"):
-        slug = payload.removeprefix("product_")
-        product = get_product_by_slug(slug)
+    action, value = _resolve_payload(payload or None)
+
+    if action == "product" and value:
+        product = get_product_by_slug(value)
         if product:
             from bot.handlers.catalog import show_product
+
             await show_product(message, product_id=product["id"], edit=False)
             return
+
+    if action == "catalog":
+        from bot.keyboards.inline import categories_keyboard, products_keyboard
+
+        if value:
+            await message.answer(
+                "Выбирайте товар 👇", reply_markup=products_keyboard(value, 1), parse_mode="HTML"
+            )
+        else:
+            await message.answer(
+                "🛍 <b>Каталог</b>\n\nВыберите категорию:",
+                reply_markup=categories_keyboard(),
+                parse_mode="HTML",
+            )
+        return
+
+    if action == "consult":
+        from bot.keyboards.inline import consultation_keyboard
+
+        await message.answer(
+            "💬 <b>Консультация</b>\n\nНаш beauty-консьерж поможет подобрать уход. Выберите вариант:",
+            reply_markup=consultation_keyboard(),
+            parse_mode="HTML",
+        )
+        return
+
+    if action == "promos":
+        from bot.keyboards.inline import promos_keyboard
+        from bot.services.catalog import get_promos
+
+        lines = ["🔥 <b>Акции и предложения</b>", ""]
+        for promo in get_promos():
+            lines.append(f"{promo.get('emoji', '✨')} <b>{promo['title']}</b>\n{promo['text']}")
+            lines.append("")
+        if len(lines) == 2:
+            lines.append("Предзаказ из США — привезём любой товар под заказ. Уточняйте у менеджера.")
+            lines.append("")
+        await message.answer("\n".join(lines), reply_markup=promos_keyboard(), parse_mode="HTML")
+        return
 
     await message.answer(
         f"👋 Привет, {message.from_user.first_name}!\n\n" + START_TEXT,
@@ -162,9 +203,8 @@ async def menu_delivery(callback: CallbackQuery) -> None:
 
 @router.callback_query(MenuCallback.filter(F.action == "about"))
 async def menu_about(callback: CallbackQuery) -> None:
-    from bot.utils.formatting import about_text
     from bot.keyboards.inline import InlineKeyboardBuilder
-    from aiogram.types import InlineKeyboardButton
+    from bot.utils.formatting import about_text
 
     settings = get_settings()
     builder = InlineKeyboardBuilder()

@@ -9,12 +9,11 @@ from __future__ import annotations
 
 import logging
 import random
-from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from zoneinfo import ZoneInfo
 
 from bot.config import get_settings
 
@@ -30,8 +29,9 @@ _SEQUENCE_INDEX = 0
 async def _publish_job(bot: Bot) -> None:
     """Один запланированный пост."""
     global _SEQUENCE_INDEX
-    from .poster import post_deal, post_product_to_channel, post_tip, post_top_week
     from bot.services.catalog import get_products
+
+    from .poster import post_deal, post_product_to_channel, post_tip, post_top_week
 
     products = get_products()
     if not products:

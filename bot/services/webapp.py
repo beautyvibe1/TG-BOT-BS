@@ -90,6 +90,7 @@ async def process_webapp_order(bot, message, data: str) -> None:
         return
 
     from bot.database import get_sessionmaker
+    from bot.services.order import create_order_from_webapp, render_order
 
     async with get_sessionmaker()() as db_session:
         user = await get_or_create_user(
@@ -101,34 +102,24 @@ async def process_webapp_order(bot, message, data: str) -> None:
             await message.answer("Корзина пуста.")
             return
 
-        total = 0
-        for item in items:
-            total += int(item.get("price", 0)) * int(item.get("qty", 1))
+        order = await create_order_from_webapp(db_session, user, payload)
 
-        order_number = f"WB-{message.message_id}"
         kb = InlineKeyboardBuilder()
-        kb.button(text="📋 Обработать", callback_data=AdminCallback(action="orders").pack())
+        kb.button(text="👀 Открыть", callback_data=AdminCallback(action="order", order_id=order.id).pack())
 
-        order_text = f"🛍 <b>Заказ из Mini App</b>\n\n№ {order_number}\n\n"
-        for item in items:
-            order_text += f"• {item.get('name', '')} ×{item.get('qty', 1)} — {item.get('price', 0) * item.get('qty', 1)} ₽\n"
-        total_fmt = f"{total:,}".replace(",", " ")
-        order_text += (
-            f"\n💎 Итого: <b>{total_fmt} ₽</b>\n"
-            f"👤 {payload.get('customer_name', '')}\n"
-            f"📞 {payload.get('phone', '')}\n"
-            f"📍 {payload.get('address', '')}\n"
-            f"🚚 Доставка: {payload.get('delivery_method', '')}"
+        await notify_admins(
+            bot,
+            f"🛍 <b>Заказ из Mini App</b>\n\n{render_order(order)}",
+            kb.as_markup(),
         )
-
-        await notify_admins(bot, order_text, kb.as_markup())
         user.last_source = "webapp"
         await db_session.commit()
 
-    total_fmt2 = f"{total:,}".replace(",", " ")
+    total_fmt = f"{order.total:,}".replace(",", " ")
     await message.answer(
         "✅ <b>Заказ из витрины получен!</b>\n\n"
-        f"Сумма: <b>{total_fmt2} ₽</b>\n"
+        f"Заказ <b>{order.number}</b>\n"
+        f"Сумма: <b>{total_fmt} ₽</b>\n"
         "Менеджер подтвердит заказ и свяжется с вами для оплаты и доставки.\n\n"
         "Статус — в разделе «📦 Мои заказы».",
         parse_mode="HTML",

@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import Any
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
-from aiogram.types import InputMediaPhoto
 
 from bot.config import get_settings
 from bot.services.catalog import get_product_by_slug, get_products
@@ -26,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 async def _send_photo(bot: Bot, chat_id: str | int, image: str, caption: str, reply_markup) -> bool:
     """Отправляет фото с подписью в канал (graceful fallback без фото)."""
-    settings = get_settings()
     try:
         await bot.send_photo(
             chat_id, photo=image, caption=caption, reply_markup=reply_markup, parse_mode="HTML"
@@ -53,7 +50,7 @@ async def post_product_to_channel(bot: Bot, slug: str) -> bool:
         logger.error("Товар %s не найден в каталоге", slug)
         return False
     settings = get_settings()
-    chat_id = settings.channel_id
+    chat_id = settings.resolved_channel_id
     caption = post_product_html(product)
     reply_markup = build_product_keyboard(product)
     return await _send_photo(bot, chat_id, product["image"], caption, reply_markup)
@@ -65,13 +62,15 @@ async def post_deal(bot: Bot, slug: str, discount_percent: int = 10) -> bool:
         return False
     settings = get_settings()
     caption = post_deal_html(product, discount_percent)
-    return await _send_photo(bot, settings.channel_id, product["image"], caption, build_product_keyboard(product))
+    return await _send_photo(
+        bot, settings.resolved_channel_id, product["image"], caption, build_product_keyboard(product)
+    )
 
 
 async def post_tip(bot: Bot) -> bool:
     settings = get_settings()
     try:
-        await bot.send_message(settings.channel_id, post_tip_html(), parse_mode="HTML")
+        await bot.send_message(settings.resolved_channel_id, post_tip_html(), parse_mode="HTML")
         return True
     except Exception:  # noqa: BLE001
         logger.exception("Ошибка поста совета")
@@ -84,7 +83,7 @@ async def post_top_week(bot: Bot) -> bool:
     settings = get_settings()
     caption = post_top_week_html(top)
     try:
-        await bot.send_message(settings.channel_id, caption, parse_mode="HTML")
+        await bot.send_message(settings.resolved_channel_id, caption, parse_mode="HTML")
         return True
     except Exception:  # noqa: BLE001
         logger.exception("Ошибка поста подборки")

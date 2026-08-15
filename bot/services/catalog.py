@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.config import BASE_DIR, get_settings
+from bot.config import get_settings
 from bot.models import Cart, CartItem, Category, Product, User
 
 logger = logging.getLogger(__name__)
@@ -196,14 +196,29 @@ async def get_cart(db: AsyncSession, user: User) -> Cart:
     return cart
 
 
+async def resolve_product_id(db: AsyncSession, product_id: int) -> int:
+    """Преобразует id каталога (external_id) в первичный ключ БД.
+
+    Клиентский код оперирует id из catalog.json (external_id), тогда как
+    корзина и позиции заказа ссылаются на первичный ключ products.id.
+    """
+    product = await db.scalar(select(Product).where(Product.external_id == product_id))
+    if product is None:
+        product = await db.get(Product, product_id)
+    if product is None:
+        raise ValueError(f"Товар {product_id} не найден в БД — запустите seed")
+    return product.id
+
+
 async def add_to_cart(db: AsyncSession, user: User, product_id: int, quantity: int = 1) -> CartItem:
     """Добавляет товар в корзину (увеличивает количество при повторе)."""
     cart = await get_cart(db, user)
+    db_product_id = await resolve_product_id(db, product_id)
     item = await db.scalar(
-        select(CartItem).where(CartItem.cart_id == cart.id, CartItem.product_id == product_id)
+        select(CartItem).where(CartItem.cart_id == cart.id, CartItem.product_id == db_product_id)
     )
     if item is None:
-        item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
+        item = CartItem(cart_id=cart.id, product_id=db_product_id, quantity=quantity)
         db.add(item)
     else:
         item.quantity += quantity

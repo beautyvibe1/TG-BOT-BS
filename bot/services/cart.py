@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.models import Cart, CartItem, Promo, User
+from bot.models import Cart, Promo
 
 
 def format_price(amount: int) -> str:
@@ -53,7 +53,7 @@ def render_cart(cart: Cart, *, discount: int = 0, delivery_cost: int = 0) -> str
     lines.append(f"Сумма: *{format_price(cart.total_price)}*")
     if discount:
         lines.append(f"Скидка: −{format_price(discount)}")
-        lines.append(f"Промокод: *{format_price(cart.total_price - discount)}*")
+        lines.append(f"После скидки: *{format_price(cart.total_price - discount)}*")
     if delivery_cost:
         lines.append(f"Доставка: {format_price(delivery_cost)}")
     if discount or delivery_cost:

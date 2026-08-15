@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+
 from sqlalchemy import select
 
-from bot.models import CartItem, Category, Product, Promo
+from bot.models import Category, Product, Promo
 from bot.services import catalog
 from bot.services.cart import format_price, get_promo, render_cart
 
@@ -83,13 +85,13 @@ async def test_promo_percent(db_session):
 
 
 async def test_promo_expired(db_session):
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     promo = Promo(
         code="OLD",
         promo_type="fixed",
         value=50,
-        expires_at=datetime.now(timezone.utc) - timedelta(days=1),
+        expires_at=datetime.now(UTC) - timedelta(days=1),
     )
     db_session.add(promo)
     await db_session.commit()

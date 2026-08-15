@@ -7,7 +7,6 @@ import logging
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message, PreCheckoutQuery, SuccessfulPayment
 
-from bot.config import get_settings
 from bot.keyboards.factories import OrderCallback
 from bot.models import Order, PaymentStatus
 from bot.services.notification import notify_admins
@@ -37,7 +36,6 @@ async def on_successful_payment(message: Message, session) -> None:
         await message.answer("Оплата получена, но не удалось найти заказ. Напишите менеджеру.")
         return
 
-    order = await session.get(Order, None)  # placeholder; replaced below
     from sqlalchemy import select
 
     order = await session.scalar(select(Order).where(Order.number == order_number))

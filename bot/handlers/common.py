@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 
 from aiogram import F, Router
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 
 from bot.config import get_settings
-from bot.keyboards.factories import MenuCallback
 from bot.keyboards.inline import promos_keyboard
-from bot.services.catalog import get_delivery, get_promos, get_reviews
+from bot.services.catalog import get_promos
 from bot.utils.formatting import about_text, delivery_text
 
 logger = logging.getLogger(__name__)

@@ -9,7 +9,7 @@ from aiogram import Bot
 from aiogram.types import LabeledPrice, PreCheckoutQuery, SuccessfulPayment
 
 from bot.config import get_settings
-from bot.models import Order, OrderItem, PaymentMethod, PaymentStatus
+from bot.models import Order, PaymentMethod, PaymentStatus
 
 logger = logging.getLogger(__name__)
 
