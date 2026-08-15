@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import secrets
 from datetime import datetime
 
@@ -14,12 +15,16 @@ from bot.models import (
     Order,
     OrderItem,
     OrderStatus,
-    PaymentMethod,
     PaymentStatus,
     User,
 )
 
 from .cart import format_price
+
+
+def _e(value: object) -> str:
+    """HTML-экранирование для parse_mode=HTML."""
+    return html.escape(str(value if value is not None else ""))
 
 
 async def next_order_number(db: AsyncSession) -> str:
@@ -113,31 +118,92 @@ async def create_order_from_cart(
     return created or order
 
 
+async def create_order_from_webapp(db: AsyncSession, user: User, payload: dict) -> Order:
+    """Создаёт заказ из данных Telegram Mini App (sendData).
+
+    В отличие от оформления в боте, здесь нет FSM и выбора оплаты:
+    заказ фиксируется со способом оплаты «перевод менеджеру», а менеджер
+    связывается с клиентом.
+    """
+    from sqlalchemy.orm import selectinload
+
+    raw_items = payload.get("items", []) or []
+    items_total = 0
+    prepared: list[tuple[dict, int, int]] = []
+    for item in raw_items:
+        try:
+            price = int(item.get("price", 0))
+            qty = int(item.get("qty", 1))
+        except (TypeError, ValueError):
+            continue
+        if price < 0 or qty <= 0:
+            continue
+        items_total += price * qty
+        prepared.append((item, price, qty))
+
+    order = Order(
+        number=await next_order_number(db),
+        user_id=user.id,
+        status=OrderStatus.NEW.value,
+        delivery_method=str(payload.get("delivery_method") or "cdek"),
+        payment_method="transfer",
+        payment_status=PaymentStatus.PENDING.value,
+        customer_name=payload.get("customer_name"),
+        phone=payload.get("phone"),
+        address=payload.get("address"),
+        comment=payload.get("comment"),
+        items_total=items_total,
+        delivery_cost=0,
+        discount=0,
+        total=items_total,
+        source="webapp",
+    )
+    db.add(order)
+    await db.flush()
+
+    for item, price, qty in prepared:
+        db.add(
+            OrderItem(
+                order_id=order.id,
+                product_slug=str(item.get("slug") or ""),
+                product_name=str(item.get("name") or item.get("product_id") or ""),
+                unit_price=price,
+                quantity=qty,
+            )
+        )
+    await db.commit()
+
+    created = await db.scalar(
+        select(Order).where(Order.id == order.id).options(selectinload(Order.items))
+    )
+    return created or order
+
+
 def render_order(order: Order) -> str:
-    """Подробное представление заказа (для клиента и админа)."""
+    """Подробное представление заказа (HTML, для клиента и админа)."""
     lines = [
-        f"📋 *Заказ {order.number}*",
+        f"📋 <b>Заказ {_e(order.number)}</b>",
         "",
     ]
     for item in order.items:
-        lines.append(f"• {item.product_name} ×{item.quantity} — {format_price(item.line_total)}")
+        lines.append(f"• {_e(item.product_name)} ×{item.quantity} — {format_price(item.line_total)}")
     lines.append("")
     lines.append(f"Товары: {format_price(order.items_total)}")
     if order.discount:
         lines.append(f"Скидка: −{format_price(order.discount)}")
     if order.delivery_cost:
         lines.append(f"Доставка: {format_price(order.delivery_cost)}")
-    lines.append(f"💎 *Итого: {format_price(order.total)}*")
+    lines.append(f"💎 <b>Итого: {format_price(order.total)}</b>")
     lines.append("")
-    lines.append(f"👤 {order.customer_name}")
-    lines.append(f"📞 {order.phone or '—'}")
-    lines.append(f"📍 {order.address or '—'}")
+    lines.append(f"👤 {_e(order.customer_name or '—')}")
+    lines.append(f"📞 {_e(order.phone or '—')}")
+    lines.append(f"📍 {_e(order.address or '—')}")
     if order.comment:
-        lines.append(f"💬 {order.comment}")
+        lines.append(f"💬 {_e(order.comment)}")
     lines.append("")
-    lines.append(f"🚚 Доставка: {order.delivery_method or '—'}")
-    lines.append(f"💳 Оплата: {order.payment_method or '—'}")
-    lines.append(f"Статус: *{order.status_enum.label}*")
+    lines.append(f"🚚 Доставка: {_e(method_label(order.delivery_method))}")
+    lines.append(f"💳 Оплата: {_e(payment_label(order.payment_method))}")
+    lines.append(f"Статус: <b>{_e(order.status_enum.label)}</b>")
     return "\n".join(lines)
 
 

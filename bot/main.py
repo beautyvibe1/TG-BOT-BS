@@ -46,9 +46,27 @@ def setup_logging(level: str | None = None) -> None:
     std_logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 
+def _redis_reachable(url: str, timeout: float = 1.0) -> bool:
+    """Быстрая проверка доступности Redis по TCP (для fallback на MemoryStorage)."""
+    try:
+        import socket
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or 6379
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
 def build_storage():
     settings = get_settings()
     if settings.use_redis:
+        if not _redis_reachable(settings.redis_url):
+            logger.warning("Redis недоступен (%s), использую MemoryStorage", settings.redis_url)
+            return MemoryStorage()
         try:
             from redis.asyncio import Redis
 
@@ -57,7 +75,7 @@ def build_storage():
             logger.info("FSM storage: Redis (%s)", settings.redis_url)
             return storage
         except Exception:  # noqa: BLE001
-            logger.warning("Redis недоступен, использую MemoryStorage")
+            logger.warning("Не удалось создать RedisStorage, использую MemoryStorage")
     return MemoryStorage()
 
 
@@ -83,9 +101,9 @@ def create_dispatcher() -> Dispatcher:
     return dp
 
 
-async def on_startup(bot: Bot, dp: Dispatcher) -> None:
+async def on_startup(bot: Bot) -> None:
     """Инициализация при запуске: БД, каталог, планировщик."""
-    from bot.database import init_db, get_sessionmaker
+    from bot.database import get_sessionmaker, init_db
     from bot.services import catalog
 
     await init_db()
@@ -104,7 +122,7 @@ async def on_startup(bot: Bot, dp: Dispatcher) -> None:
             logger.exception("Не удалось запустить планировщик канала")
 
 
-async def on_shutdown(bot: Bot, dp: Dispatcher) -> None:
+async def on_shutdown(bot: Bot) -> None:
     """Graceful shutdown."""
     from bot.database import close_db
 

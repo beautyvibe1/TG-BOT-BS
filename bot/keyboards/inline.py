@@ -7,8 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.config import get_settings
 from bot.models import Order, OrderStatus
-from bot.services.catalog import get_categories, get_products, get_product_by_id
-from bot.services.order import render_order
+from bot.services.catalog import get_categories, get_products
 
 from .factories import (
     AdminCallback,

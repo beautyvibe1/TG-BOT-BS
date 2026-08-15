@@ -8,17 +8,10 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineQuery, InlineQueryResultArticle, InputTextMessageContent, Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.config import get_settings
-from bot.keyboards.factories import CatalogCallback, MenuCallback, ProductCallback
+from bot.keyboards.factories import CatalogCallback, ProductCallback
 from bot.keyboards.inline import categories_keyboard, product_keyboard, products_keyboard
-from bot.services.catalog import (
-    get_category_by_id,
-    get_product_by_id,
-    get_products,
-    search_products,
-)
+from bot.services.catalog import get_product_by_id, get_products, search_products
 from bot.utils.formatting import product_card
 
 logger = logging.getLogger(__name__)
@@ -79,6 +72,12 @@ async def back_to_list(callback: CallbackQuery, callback_data: ProductCallback) 
     product = get_product_by_id(callback_data.product_id)
     category = product.get("category", "all") if product else "all"
     await callback.message.edit_text("Выбирайте товар 👇", reply_markup=products_keyboard(category, 1), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.callback_query(F.data == "noop")
+async def noop_callback(callback: CallbackQuery) -> None:
+    """Заглушка для кнопки-индикатора страницы (чтобы не висла загрузка)."""
     await callback.answer()
 
 

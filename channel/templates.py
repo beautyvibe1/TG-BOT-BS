@@ -15,7 +15,6 @@ def _format_price(price: int) -> str:
 
 def post_product_html(product: dict[str, Any]) -> str:
     """Пост «Новый товар / поступление» (HTML)."""
-    settings = get_settings()
     name = product.get("ruName") or product["name"]
     badge = product.get("badge")
     line = product.get("line")

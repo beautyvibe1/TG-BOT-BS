@@ -10,9 +10,9 @@ from aiogram.types import CallbackQuery, Message
 
 from bot.keyboards.factories import CartCallback, MenuCallback, ProductCallback
 from bot.keyboards.inline import cart_item_actions, cart_keyboard, product_qty_keyboard
-from bot.services.cart import render_cart
-from bot.services.catalog import get_or_create_user, get_product_by_id
 from bot.services import catalog as catalog_service
+from bot.services.cart import render_cart
+from bot.services.catalog import get_or_create_user
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,11 @@ async def cart_view_item(callback: CallbackQuery, callback_data: CartCallback, s
 @router.callback_query(ProductCallback.filter(F.action == "add"))
 async def add_to_cart(callback: CallbackQuery, callback_data: ProductCallback, session) -> None:
     user = await get_or_create_user(session, callback.from_user.id)
-    await catalog_service.add_to_cart(session, user, callback_data.product_id, quantity=1)
+    try:
+        await catalog_service.add_to_cart(session, user, callback_data.product_id, quantity=1)
+    except ValueError as exc:
+        await callback.answer(str(exc), show_alert=True)
+        return
     await callback.answer("✅ Добавлено в корзину", show_alert=False)
     await callback.message.answer("Товар в корзине. Изменить количество?", reply_markup=product_qty_keyboard(callback_data.product_id))
 
@@ -90,17 +94,30 @@ async def dec_product_qty(callback: CallbackQuery, callback_data: ProductCallbac
 async def remove_from_cart(callback: CallbackQuery, callback_data: ProductCallback, session) -> None:
     user = await get_or_create_user(session, callback.from_user.id)
     cart = await catalog_service.get_cart(session, user)
-    item = next((i for i in cart.items if i.product_id == callback_data.product_id), None)
+    item = _find_item(cart, callback_data.product_id)
     if item:
         await catalog_service.remove_cart_item(session, item.id)
         await callback.answer("🗑 Удалено")
     await show_cart(callback.message, session, callback.message.chat.id)
 
 
+def _find_item(cart, product_id: int):
+    """Ищет позицию корзины по id каталога (external_id) или по первичному ключу."""
+    return next(
+        (
+            i
+            for i in cart.items
+            if i.product_id == product_id
+            or (i.product is not None and i.product.external_id == product_id)
+        ),
+        None,
+    )
+
+
 async def _adjust_product_qty(callback: CallbackQuery, product_id: int, delta: int, session) -> None:
     user = await get_or_create_user(session, callback.from_user.id)
     cart = await catalog_service.get_cart(session, user)
-    item = next((i for i in cart.items if i.product_id == product_id), None)
+    item = _find_item(cart, product_id)
     if item is None:
         await callback.answer("Товара нет в корзине")
         return

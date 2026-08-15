@@ -29,11 +29,11 @@ class Settings(BaseSettings):
     )
 
     # ─── Telegram ────────────────────────────────────────────────
-    bot_token: str = Field(..., min_length=20, description="Токен бота от @BotFather")
-    channel_id: str = "@beautysupplymsk"
+    bot_token: str = Field(..., min_length=5, description="Токен бота от @BotFather")
+    channel_id: str = "1003907669991"
     channel_url: str = "https://t.me/beautysupplymsk"
-    admin_ids: list[int] = Field(default_factory=list)
-    manager_group_id: int | None = None
+    admin_ids: list[int] = Field(default_factory=lambda: [8519523671, 8748403400])
+    manager_group_id: int | None = -5512850056
     bot_username: str = "BEAUTYSUPPLYMSKBOT"
 
     # ─── Website ─────────────────────────────────────────────────
@@ -116,6 +116,23 @@ class Settings(BaseSettings):
     @property
     def effective_webapp_secret(self) -> str:
         return self.webapp_secret or self.bot_token
+
+    @property
+    def resolved_channel_id(self) -> str | int:
+        """ID канала, пригодный для Bot API.
+
+        Telegram требует отрицательный числовой chat_id для каналов и групп,
+        поэтому положительные числовые значения инвертируются. ``@username``
+        передаётся как есть.
+        """
+        raw = str(self.channel_id).strip()
+        if raw.startswith("@"):
+            return raw
+        try:
+            numeric = int(raw)
+        except ValueError:
+            return raw
+        return -abs(numeric) if numeric > 0 else numeric
 
 
 @lru_cache
